@@ -1,14 +1,27 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReadContract } from 'wagmi'
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { wagmiContractConfig } from '../lib/wagmiContractConfig';
 import { convertDate } from '@/lib/utils';
 
-function HomePage() {
+interface Event {
+  id: string;
+  name: string;
+  title: string;
+  slug: string;
+  description: string;
+  date: string;
+  ticketContract: string;
+  ticketPrice: number;
+  imageCID: string;
+}
+
+const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: fetchedEvents, isLoading, isError, error } = useReadContract({
@@ -16,12 +29,12 @@ function HomePage() {
     functionName: 'getAllEvents',
   });
 
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     if (fetchedEvents) {
       console.log('Fetched events:', fetchedEvents);
-      setEvents(fetchedEvents);
+      setEvents(fetchedEvents as Event[]);
     }
   }, [fetchedEvents, isError, error]);
 

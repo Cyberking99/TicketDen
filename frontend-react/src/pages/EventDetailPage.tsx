@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { type BaseError, useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, WagmiConfig } from 'wagmi';
+import { type BaseError, useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -9,44 +9,60 @@ import { Label } from '../components/ui/label';
 import { wagmiContractConfig } from '../lib/wagmiContractConfig';
 import TicketDenNFT from '../../ABIs/TicketDenNFT.json';
 import { convertDate } from '@/lib/utils';
-import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 
-function EventDetailPage() {
+interface Event {
+  id: string;
+  name: string;
+  title: string;
+  slug: string;
+  location: string;
+  description: string;
+  date: string;
+  ticketContract: string;
+  ticketPrice: number;
+  ticketSupply: number;
+  availableTickets: number;
+  imageCID: string;
+}
+
+interface TicketSold {
+  [key: number]: number;
+}
+
+const EventDetailPage: React.FC = () => {
   const location = useLocation();
-  // const { event } = location.state || {};
 
   const { id } = useParams<{ id: string }>();
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { data: hash, error, isPending, writeContract } = useWriteContract();
-  const [event, setEvent] = useState(location.state.event);
+  const [event, setEvent] = useState<Event>(location.state.event);
   const [quantity, setQuantity] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Purchase Ticket");
 
   useEffect(() => {
     // console.log(location.state.event)
     setEvent(location.state.event);
-  }, [id]);
+  }, [id, location.state.event]);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
   useWaitForTransactionReceipt({
     hash,
   })
 
-  const { data: ticketSold, isLoading, isError, error: readError } = useReadContract({
+  const { data: ticketSold, isError, error: readError } = useReadContract({
     abi: TicketDenNFT,
-    address: event.ticketContract,
+    address: event.ticketContract as `0x${string}`,
     functionName: 'ticketsSold',
   });
 
-    const [ticketsSold, setTicketsSold] = useState([]);
+    const [ticketsSold, setTicketsSold] = useState<TicketSold>();
     
       useEffect(() => {
         if (ticketSold) {
-          console.log('Fetched events:', ticketSold.toString()/10e18);
-          setTicketsSold(ticketSold);
+          console.log('Fetched events:', Number(ticketSold)/10e18);
+          setTicketsSold(ticketSold as TicketSold);
         }
       }, [ticketSold, isError, readError]);
 
@@ -55,15 +71,7 @@ function EventDetailPage() {
     
     try {
 
-      const price = (event.ticketPrice.toString()/10e18)*quantity;
-    
-      // writeContract({
-      //   abi: TicketDenNFT,
-      //   address: event.ticketContract,
-      //   functionName: 'purchaseTicket',
-      //   args: [quantity],
-      //   value: parseEther(price.toString())
-      // })
+      const price = (Number(event.ticketPrice)/10e18)*quantity;
 
       writeContract({
         ...wagmiContractConfig,
@@ -74,18 +82,14 @@ function EventDetailPage() {
 
       console.log(TicketDenNFT, event.ticketContract, event.ticketPrice)
       console.log(`Purchasing ${quantity} ticket(s) for event ${id}`);
-      // alert(`Purchase of ${quantity} ticket(s) initiated. Check your wallet to confirm the transaction.`);
-    
-    
+
           if(isConfirming) {
               toast.info("Transaction is processing...");
           }
     
           if(isConfirmed) {
-            setIsSubmitting(false);
+            // setIsSubmitting(false);
             toast.success("Ticket purchased successfully!");
-            setSuccess(true);
-            resetForm();
           }
     
           if(error) {
@@ -93,11 +97,11 @@ function EventDetailPage() {
           }
     
         } catch (error) {
-            setIsSubmitting(false);
+            // setIsSubmitting(false);
             console.error("Error creating event:", error);
             toast.error("Failed to create event. Check console for details.");
         } finally {
-            setIsSubmitting(false);
+            // setIsSubmitting(false);
             setButtonTitle("Create Event");
         }
   };
@@ -125,10 +129,10 @@ function EventDetailPage() {
             </div>
             <div>
               <h3 className="font-semibold">Available Tickets</h3>
-              <p>{(Number(event.ticketSupply.toString()/10e18)-Number(ticketsSold?(ticketsSold.toString()/10e18):0)).toString()*10e18}</p>
+              <p>{((Number(event.ticketSupply)/10e18)-Number(ticketsSold?(Number(ticketsSold)/10e18):0))*10e18}</p>
             </div>
           </div>
-          <p className="text-xl font-bold">Price: {event.ticketPrice.toString()/10e18} ETH / ticket</p>
+          <p className="text-xl font-bold">Price: {Number(event.ticketPrice)/10e18} ETH / ticket</p>
         </CardContent>
         <CardFooter>
           {isConnected ? (
@@ -146,8 +150,8 @@ function EventDetailPage() {
                 />
               </div>
               <div>
-                <p className="mb-2">Total: {(parseFloat(event.ticketPrice.toString()/10e18) * quantity).toFixed(5)} ETH</p>
-                <Button disabled={isPending} type="submit" className="w-full sm:w-auto">{isPending ? 'Purchasing...' : 'Purchase Tickets'}</Button>
+                <p className="mb-2">Total: {(parseFloat(String(event.ticketPrice/10e18)) * quantity).toFixed(5)} ETH</p>
+                <Button disabled={isPending} type="submit" className="w-full sm:w-auto">{isPending ? buttonTitle : buttonTitle }</Button>
               </div>
               {hash && <div>Transaction Hash: {hash}</div>}
               {isConfirming && <div>Waiting for confirmation...</div>}

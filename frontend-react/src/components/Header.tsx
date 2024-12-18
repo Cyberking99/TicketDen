@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Button } from './ui/button';
 
 function Header() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   // const { connect, connectors, error, isLoading, pendingConnector } = useConnect();
   // const { disconnect } = useDisconnect();
   // const queryClient = new QueryClient()

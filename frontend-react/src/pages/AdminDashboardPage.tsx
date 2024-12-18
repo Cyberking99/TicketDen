@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -20,8 +20,10 @@ const mockTickets = [
 function AdminDashboardPage() {
   const [analytics, setAnalytics] = useState(mockAnalytics);
   const [tickets, setTickets] = useState(mockTickets);
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const navigate = useNavigate();
+
+  setAnalytics(mockAnalytics);
   
   const isAdmin = true;
 

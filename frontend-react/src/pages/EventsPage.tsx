@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useReadContract } from 'wagmi'
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,7 +9,18 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { wagmiContractConfig } from '../lib/wagmiContractConfig';
 import { convertDate } from '@/lib/utils';
 
-function EventsPage() {
+interface Event {
+  id: string;
+  name: string;
+  title: string;
+  slug: string;
+  description: string;
+  date: string;
+  ticketContract: string;
+  ticketPrice: number;
+  imageCID: string;
+}
+const EventsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: fetchedEvents, isLoading, isError, error } = useReadContract({
@@ -16,12 +28,12 @@ function EventsPage() {
     functionName: 'getAllEvents',
   });
 
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     if (fetchedEvents) {
       console.log('Fetched events:', fetchedEvents);
-      setEvents(fetchedEvents);
+      setEvents(fetchedEvents as Event[]);
     }
   }, [fetchedEvents, isError, error]);
 
@@ -37,53 +49,53 @@ function EventsPage() {
       <section className="mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {isLoading ? (
-              Array.from({ length: 6 }).map((_, index) => (
-                <Card key={index} className="flex flex-col">
-                  <div className="relative w-full pt-[56.25%]">
-                    <Skeleton className="absolute top-0 left-0 w-full h-full" />
-                  </div>
-                  <CardHeader>
-                    <Skeleton width="80%" height={20} />
-                    <Skeleton width="60%" height={15} />
-                  </CardHeader>
-                  <CardFooter>
-                    <Skeleton height={40} />
-                  </CardFooter>
-                </Card>
-              ))
-            ) : events && events.length > 0 ? (
-              events.map((event, index) => (
-                <Card key={index} className="flex flex-col" onClick={() => handleEventClick(event)}>
-                  <div className="relative w-full pt-[56.25%]">
-                    <img
-                      src={
-                        event.imageCID && event.imageCID !== 'none'
-                          ? `https://gateway.pinata.cloud/ipfs/${event.imageCID}`
-                          : 'https://picsum.photos/200/300'
-                      }
-                      alt={`${event.name} flyer`}
-                      className="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle>{event.name}</CardTitle>
-                    <CardDescription>{convertDate(event.date.toString())}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Price: {event.ticketPrice.toString()/10e18} ETH</p>
-                  </CardContent>
-                  <CardFooter className="mt-auto">
-                    {/* <Link to={`/event/${event.id}`} className="w-full"> */}
-                      <Button className="w-full">View Event</Button>
-                    {/* </Link> */}
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <p className='w-full'>No events available at the moment. Please check back later!</p>
-            )}
+        Array.from({ length: 6 }).map((_, index) => (
+          <Card key={index} className="flex flex-col">
+            <div className="relative w-full pt-[56.25%]">
+              <Skeleton className="absolute top-0 left-0 w-full h-full" />
             </div>
-            </section>
+            <CardHeader>
+              <Skeleton width="80%" height={20} />
+              <Skeleton width="60%" height={15} />
+            </CardHeader>
+            <CardFooter>
+              <Skeleton height={40} />
+            </CardFooter>
+          </Card>
+        ))
+      ) : events && events.length > 0 ? (
+        events.map((event: Event, index) => (
+          <Card key={index} className="flex flex-col" onClick={() => handleEventClick(event)}>
+            <div className="relative w-full pt-[56.25%]">
+              <img
+                src={
+                  event.imageCID && event.imageCID !== 'none'
+                    ? `https://gateway.pinata.cloud/ipfs/${event.imageCID}`
+                    : 'https://picsum.photos/200/300'
+                }
+                alt={`${event.name} flyer`}
+                className="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
+              />
+            </div>
+            <CardHeader>
+              <CardTitle>{event.name}</CardTitle>
+              <CardDescription>{convertDate(event.date.toString())}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Price: {Number(event.ticketPrice)/10e18} ETH</p>
+            </CardContent>
+            <CardFooter className="mt-auto">
+              {/* <Link to={`/event/${event.id}`} className="w-full"> */}
+                <Button className="w-full">View Event</Button>
+              {/* </Link> */}
+            </CardFooter>
+          </Card>
+        ))
+      ) : (
+        <p className='w-full'>No events available at the moment. Please check back later!</p>
+      )}
+      </div>
+      </section>
     </main>
   );
 }

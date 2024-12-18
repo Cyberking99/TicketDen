@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -5,13 +6,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function convertDate(timestamp: any) {
-  console.log(timestamp)
-  const date = new Date(timestamp * 1000);
+export function convertDate(timestamp: string | number | bigint | unknown) {
+  console.log(timestamp);
+  
+  const numericTimestamp = typeof timestamp === 'bigint' ? Number(timestamp) : Number(timestamp);
+  
+  const date = new Date(numericTimestamp * 1000);
   
   const day = date.getDate();
   const month = date.toLocaleString('default', { month: 'long' });
   const year = date.getFullYear();
+  
   return `${day} ${month}, ${year}`;
 }
 

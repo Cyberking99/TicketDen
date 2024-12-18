@@ -6,33 +6,39 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { wagmiContractConfig } from '../lib/wagmiContractConfig';
 import { convertDate } from '@/lib/utils';
-import TicketDenABI from '../../ABIs/TicketDen.json';
 import { useNavigate } from 'react-router-dom';
 
-function MyTicketsPage() {
+interface Ticket {
+  slug: string;
+  name: string;
+  date: bigint;
+  imageCID: string;
+}
+
+const MyTicketsPage: React.FC = () => {
   const navigate = useNavigate();
   
   const { address, isConnected } = useAccount();
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
 
   const { data: fetchedTickets, isLoading, isError, error } = useReadContract({
-      ...wagmiContractConfig,
-      functionName: 'getUserTickets',
-      args: [address],
+    ...wagmiContractConfig,
+    functionName: 'getUserTickets',
+    args: [address],
+  } as const);
+    
+  useEffect(() => {
+    if (fetchedTickets) {
+      console.log('Fetched tickets processed:', fetchedTickets);
+      setTickets(fetchedTickets as Ticket[]);
+    }
+  }, [fetchedTickets, isLoading, isError, error]);
+    
+  const handleEventClick = (ticket: Ticket) => {
+    navigate(`/ticket/${ticket.slug}`, {
+      state: { ticket: ticket },
     });
-    
-    useEffect(() => {
-      if (fetchedTickets) {
-        console.log('Fetched tickets processed:', fetchedTickets);
-        setTickets(fetchedTickets);
-      }
-    }, [fetchedTickets, isLoading, isError, error]);
-    
-    const handleEventClick = (ticket: any) => {
-      navigate(`/ticket/${ticket.slug}`, {
-        state: { ticket: ticket },
-      });
-    };
+  };
 
   if (!isConnected) {
     return (
@@ -77,7 +83,7 @@ function MyTicketsPage() {
             </div>
             <CardHeader>
               <CardTitle>{ticket.name}</CardTitle>
-              <CardDescription>{convertDate(ticket.date.toString())}</CardDescription>
+              <CardDescription>{convertDate(ticket.date)}</CardDescription>
             </CardHeader>
             <CardContent>
             </CardContent>
@@ -95,3 +101,4 @@ function MyTicketsPage() {
 }
 
 export default MyTicketsPage;
+
