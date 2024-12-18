@@ -129,7 +129,7 @@ const EventDetailPage: React.FC = () => {
             </div>
             <div>
               <h3 className="font-semibold">Available Tickets</h3>
-              <p>{((Number(event.ticketSupply)/10e18)-Number(ticketsSold?(Number(ticketsSold)/10e18):0))*10e18}</p>
+              <p>{Math.round(((Number(event.ticketSupply)/10e18)-Number(ticketsSold?(Number(ticketsSold)/10e18):0))*10e18)}</p>
             </div>
           </div>
           <p className="text-xl font-bold">Price: {Number(event.ticketPrice)/10e18} ETH / ticket</p>
@@ -150,7 +150,7 @@ const EventDetailPage: React.FC = () => {
                 />
               </div>
               <div>
-                <p className="mb-2">Total: {(parseFloat(String(event.ticketPrice/10e18)) * quantity).toFixed(5)} ETH</p>
+                <p className="mb-2">Total: {(parseFloat(String(Number(event.ticketPrice)/10e18)) * quantity).toFixed(5)} ETH</p>
                 <Button disabled={isPending} type="submit" className="w-full sm:w-auto">{isPending ? buttonTitle : buttonTitle }</Button>
               </div>
               {hash && <div>Transaction Hash: {hash}</div>}
