@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ethers } from "ethers";
 import { type BaseError, useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -99,10 +99,7 @@ function CreateEventPage() {
     }
   };
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    })
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
     const handleEventSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
       setIsSubmitting(true);
@@ -166,7 +163,7 @@ function CreateEventPage() {
   
         if (isConfirmed) {
           setButtonTitle("Create Event");
-          toast.success("Event created successfully!");
+          // toast.success("Event created successfully!");
           resetForm();
           setIsSubmitting(false);
         }
@@ -181,6 +178,16 @@ function CreateEventPage() {
         setIsSubmitting(false);
       }
     };
+
+    useEffect(() => {
+      if (isConfirmed) {
+        toast.success('Event created successfully!');
+        resetForm();
+        setImagePreview(null);
+        setButtonTitle("Create Event");
+        setIsSubmitting(false);
+      }
+    }, [isConfirmed]);
   
 
   return (
@@ -290,14 +297,21 @@ function CreateEventPage() {
   </Button>
   </div>
 
-  {hash && (
+  {/* {hash && (
     <div className="mt-4 text-center">
       View Transaction On Explorer: <a href={`https://sepolia-blockscout.lisk.com/tx/${hash}`} target="_blank" rel="noopener noreferrer">View</a>
     </div>
-  )}
+  )} */}
 
-  {isConfirming && <div className="mt-4 text-center">Waiting for confirmation...</div>}
-  {isConfirmed && <div className="mt-4 text-center">Transaction confirmed.</div>}
+  {/* {isConfirming && <div className="mt-4 text-center">Waiting for confirmation...</div>} */}
+  {/* {isConfirmed && <div className="mt-4 text-center">Transaction confirmed.</div>} */}
+  {isConfirming && (
+        <div className="spinner">
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+        </div>
+      )}
 
   {error && (
     <div className="mt-4 text-center text-red-500">Error: {(error as BaseError).shortMessage || error.message}</div>

@@ -99,10 +99,10 @@ const EventDetailPage: React.FC = () => {
         } catch (error) {
             // setIsSubmitting(false);
             console.error("Error creating event:", error);
-            toast.error("Failed to create event. Check console for details.");
+            toast.error("Failed to purchase ticket. Check console for details.");
         } finally {
             // setIsSubmitting(false);
-            setButtonTitle("Create Event");
+            setButtonTitle("Purchase Ticket");
         }
   };
 
@@ -153,9 +153,9 @@ const EventDetailPage: React.FC = () => {
                 <p className="mb-2">Total: {(parseFloat(String(Number(event.ticketPrice)/10e18)) * quantity).toFixed(5)} ETH</p>
                 <Button disabled={isPending} type="submit" className="w-full sm:w-auto">{isPending ? buttonTitle : buttonTitle }</Button>
               </div>
-              {hash && <div>Transaction Hash: {hash}</div>}
-              {isConfirming && <div>Waiting for confirmation...</div>}
-              {isConfirmed && <div>Transaction confirmed.</div>}
+              {/* {hash && <div>Transaction Hash: {hash}</div>} */}
+              {/* {isConfirming && <div>Waiting for confirmation...</div>}
+              {isConfirmed && <div>Transaction confirmed.</div>} */}
               {error && (
                 <div>Error: {(error as BaseError).shortMessage || error.message}</div>
               )}
