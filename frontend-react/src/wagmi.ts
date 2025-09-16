@@ -5,8 +5,8 @@ const lisk = {
     name: 'Lisk Sepolia Testnet',
     network: 'lisk-testnet',
     nativeCurrency: {
-      name: 'Lisk',
-      symbol: 'LSK',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
     rpcUrls: {
