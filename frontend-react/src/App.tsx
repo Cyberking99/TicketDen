@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
 import CreateEventPage from './pages/CreateEventPage';
 import MyTicketsPage from './pages/MyTicketsPage';
+import MyEventsPage from './pages/MyEventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 
@@ -29,18 +30,20 @@ function App() {
         <RainbowKitProvider>
       <Router>
         <div className="min-h-screen bg-gray-100 w-full">
-        <ToastContainer />
+        {/* <ToastContainer /> */}
           <Header />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/create-event" element={<CreateEventPage />} />
             <Route path="/my-tickets" element={<MyTicketsPage />} />
+            <Route path="/my-events" element={<MyEventsPage />} />
             <Route path="/event/:id" element={<EventDetailPage />} />
             <Route path="/ticket/:ticketId" element={<TicketDetailsPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
           </Routes>
           <Footer />
+          <ToastContainer />
         </div>
       </Router>
       </RainbowKitProvider>

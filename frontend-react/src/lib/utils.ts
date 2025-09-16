@@ -20,6 +20,19 @@ export function convertDate(timestamp: string | number | bigint | unknown) {
   return `${day} ${month}, ${year}`;
 }
 
+export function convertTime(timestamp: string | number | bigint | unknown) {
+  console.log(timestamp);
+  
+  const numericTimestamp = typeof timestamp === 'bigint' ? Number(timestamp) : Number(timestamp);
+  
+  const date = new Date(numericTimestamp * 1000);
+  
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  return `${hours}:${minutes}`;
+}
+
 export function convertDateToTimestamp(dateString: any) {
   const date = new Date(dateString);
   

@@ -28,6 +28,9 @@ function Header() {
               <Link to="/create-event" className="text-gray-600 hover:text-gray-900">
                 Create Event
               </Link>
+              <Link to="/my-events" className="text-gray-600 hover:text-gray-900">
+                My Events
+              </Link>
               <Link to="/my-tickets" className="text-gray-600 hover:text-gray-900">
                 My Tickets
               </Link>

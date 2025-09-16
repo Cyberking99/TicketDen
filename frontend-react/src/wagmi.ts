@@ -22,12 +22,35 @@ const lisk = {
     },
     testnet: true,
   };
-  
+
+const base = {
+  id: 8453,
+  name: 'Base',
+  network: 'base',
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://base.llamarpc.com/'],
+    },
+    public: {
+      http: ['https://base.llamarpc.com/'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Base Explorer', url: 'https://basescan.org/' },
+  },
+  testnet: true,
+};
 
 export const config = getDefaultConfig({
   appName: 'RainbowKit demo',
   projectId: 'f6944e67672a59c2ac32f0ec4777dfd8',
   chains: [
-    lisk
+    lisk,
+    base,
   ],
 });

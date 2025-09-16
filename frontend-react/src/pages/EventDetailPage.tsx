@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { type BaseError, useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem'
@@ -35,18 +35,18 @@ const EventDetailPage: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const { isConnected } = useAccount();
-  const { data: hash, error, isPending, writeContract } = useWriteContract();
+  const { data: hash, error: writeError, isPending, writeContract } = useWriteContract();
   const [event, setEvent] = useState<Event>(location.state.event);
   const [quantity, setQuantity] = useState(1);
   // const [isSubmitting, setIsSubmitting] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Purchase Ticket");
 
   useEffect(() => {
-    // console.log(location.state.event)
     setEvent(location.state.event);
   }, [id, location.state.event]);
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+  const { isLoading: isConfirming, isSuccess: isConfirmed,
+  error: confirmError } =
   useWaitForTransactionReceipt({
     hash,
   })
@@ -59,51 +59,83 @@ const EventDetailPage: React.FC = () => {
 
     const [ticketsSold, setTicketsSold] = useState<TicketSold>();
     
-      useEffect(() => {
-        if (ticketSold) {
-          console.log('Fetched events:', Number(ticketSold)/10e18);
-          setTicketsSold(ticketSold as TicketSold);
-        }
-      }, [ticketSold, isError, readError]);
+    useEffect(() => {
+      if (ticketSold) {
+        console.log('Fetched events:', Number(ticketSold)/10e18);
+        setTicketsSold(ticketSold as TicketSold);
+      }
+    }, [ticketSold, isError, readError]);
 
+  const toastId = useRef<any>(null);
+
+  useEffect(() => {
+    if (isPending) {
+      toastId.current = toast.loading("Preparing transaction...");
+      setButtonTitle("Processing...");
+    }
+  }, [isPending]);
+
+  useEffect(() => {
+    if (isConfirming && toastId.current) {
+      toast.update(toastId.current, {
+        render: "Transaction is processing...",
+        type: "info",
+        isLoading: true,
+      });
+    }
+  }, [isConfirming]);
+
+  useEffect(() => {
+    if (isConfirmed && toastId.current) {
+      toast.update(toastId.current, {
+        render: "Ticket purchased successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+      });
+      setButtonTitle("Purchase Ticket");
+      toastId.current = null;
+    }
+  }, [isConfirmed]);
+
+  useEffect(() => {
+    if ((writeError || confirmError) && toastId.current) {
+      const error = writeError || confirmError;
+      toast.update(toastId.current, {
+        render: (error as BaseError)?.shortMessage || error?.message || "Transaction failed",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
+      setButtonTitle("Purchase Ticket");
+      toastId.current = null;
+    }
+  }, [writeError, confirmError]);
+
+  // Simplified purchase handler
   const handlePurchase = (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const price = (Number(event.ticketPrice) / 10e18) * quantity;
 
-      const price = (Number(event.ticketPrice)/10e18)*quantity;
-
+      setButtonTitle("Processing...");
+      
       writeContract({
         ...wagmiContractConfig,
         functionName: 'purchaseEventTicket',
         args: [event.id, quantity],
         value: parseEther(price.toString())
-      })
+      });
 
-      console.log(TicketDenNFT, event.ticketContract, event.ticketPrice)
+      console.log(TicketDenNFT, event.ticketContract, event.ticketPrice);
       console.log(`Purchasing ${quantity} ticket(s) for event ${id}`);
 
-          if(isConfirming) {
-              toast.info("Transaction is processing...");
-          }
-    
-          if(isConfirmed) {
-            // setIsSubmitting(false);
-            toast.success("Ticket purchased successfully!");
-          }
-    
-          if(error) {
-            toast.error((error as BaseError).shortMessage || error.message);
-          }
-    
-        } catch (error) {
-            // setIsSubmitting(false);
-            console.error("Error creating event:", error);
-            toast.error("Failed to purchase ticket. Check console for details.");
-        } finally {
-            // setIsSubmitting(false);
-            setButtonTitle("Purchase Ticket");
-        }
+    } catch (error) {
+      console.error("Error creating event:", error);
+      toast.error("Failed to initiate purchase. Check console for details.");
+      setButtonTitle("Purchase Ticket");
+    }
   };
 
   return (
@@ -153,11 +185,11 @@ const EventDetailPage: React.FC = () => {
                 <p className="mb-2">Total: {(parseFloat(String(Number(event.ticketPrice)/10e18)) * quantity).toFixed(5)} ETH</p>
                 <Button disabled={isPending} type="submit" className="w-full sm:w-auto">{isPending ? buttonTitle : buttonTitle }</Button>
               </div>
-              {/* {hash && <div>Transaction Hash: {hash}</div>} */}
-              {/* {isConfirming && <div>Waiting for confirmation...</div>}
-              {isConfirmed && <div>Transaction confirmed.</div>} */}
-              {error && (
-                <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+              {hash && <div>Transaction Hash: {hash}</div>}
+              {isConfirming && <div>Waiting for confirmation...</div>}
+              {isConfirmed && <div>Transaction confirmed.</div>}
+              {writeError && (
+                <div>Error: {(writeError as BaseError).shortMessage || writeError.message}</div>
               )}
             </form>
           ) : (

@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+@layer utilities {
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
